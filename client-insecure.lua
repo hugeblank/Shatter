@@ -4,7 +4,7 @@
 
 local args = {...}
 args[1] = tonumber(args[1])
-if type(args[1]) == "number" then
+if type(args[1]) ~= "number" then
   error("invalid argument #1, computer ID expected", 2)
 end
 local ms = peripheral.getNames()
