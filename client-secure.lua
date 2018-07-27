@@ -1,9 +1,12 @@
+-- Secure keystroke event client by hugeblank
+-- This code goes on your neural interface, with a wireless modem in the peripherals cross
+-- Argument 1: Modem Channel (same as one on server)
+-- Argument 2: SMT UUID (The servers SMT UUID)
+
 local args = {...}
+args[1] = tonumber(args[1])
 if type(args[1]) ~= "number" then
     error("invalid argument #1, modem channel expected", 2)
-end
-if type(args[2]) ~= "string" then
-    error("invalid argument #2, SMT UUID expected", 2)
 end
 local smt = require("/smt")
 local t = smt("smt.main.transit")

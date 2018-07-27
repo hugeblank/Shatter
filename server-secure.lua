@@ -1,5 +1,6 @@
 -- Secure keystroke event transmitter by hugeblank
 -- This code goes on any old computer with a modem attached, and a wireless keyboard bound
+-- Argument 1: Modem Channel
 
 local args = {...}
 if type(args[1]) ~= "number" then
