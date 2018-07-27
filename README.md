@@ -90,7 +90,8 @@ Obviouslsy you're here for this part so I'll make it as brief as possible.
 
 # Putting it all Together
 Here's an example of how you could put your startup file together:
-```os.loadAPI("shatter.lua")
+```
+os.loadAPI("shatter.lua") -- Load the shatter API
 parallel.waitForAll(shatter.csrhandler,
 function()
   os.pullEvent("glass_handler") -- wait for the handler to load
