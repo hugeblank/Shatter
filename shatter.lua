@@ -5,9 +5,8 @@ local enabled = true
 local err, str = false, ""
 if not mods.canvas then
     str = "Shatter requires Overlay Glasses"
-end
-if (not (mods.getMetaOwner and mods.sense)) and enabled then
-    str = str..", an Introspection Module,  and an Entity Sensor"
+elseif (not (mods.getMetaOwner and mods.sense)) and enabled then
+    str = "Mouse enabled, an Introspection Module, and an Entity Sensor are required"
 end
 if #str > 0 then
     error(str, 2)
