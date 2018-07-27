@@ -34,6 +34,7 @@ Shatter adds several features to the overlay glasses experience beyond a termina
 
 ## Events
   `glass_handler`: fired when the glass handler is loaded
+  
   `glass_redirect`: fired when the glass terminal object is requested in `getTerm`
 
 ## Mouse
