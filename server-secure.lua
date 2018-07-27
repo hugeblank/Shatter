@@ -3,6 +3,7 @@
 -- Argument 1: Modem Channel
 
 local args = {...}
+tonumber(args[1])
 if type(args[1]) ~= "number" then
     error("invalid argument #1, modem channel expected")
 end
