@@ -1,6 +1,16 @@
 local mods = peripheral.wrap("back")
-if not mods.canvas and mods.getMetaOwner then
-    error("Tglass requires an Introspection Module and Overlay Glasses", 2)
+--mouse toggle, set to false if you would prefer not to use the integrated mouse. REMOVES THE NEED FOR ENTITY SENSOR AND INTROSPECTION MODULE
+local enabled = true
+--ensure all modules are present
+local err, str = false, ""
+if not mods.canvas then
+    str = "Shatter requires Overlay Glasses"
+end
+if (not (mods.getMetaOwner and mods.sense)) and enabled then
+    str = str..", an Introspection Module,  and an Entity Sensor"
+end
+if #str > 0 then
+    error(str, 2)
 end
 local can = mods.canvas()
 can.clear()
@@ -16,8 +26,7 @@ local bg, fg, bgbn, fgbn = colors.black, colors.white, 2^(#cbn-1), 2^0
 local cx, cy, cb = 1, 1, true
 --mouse sensitivity
 local sx, sy = 1, 1
---handler activity
---used to ensure cursor is activated before the term is redirected to.
+--handler activity, used to ensure cursor is activated before the term is redirected to.
 local active = false
 --term size
 local tx, ty = can.getSize()
@@ -63,58 +72,62 @@ function csrhandler()
     end,
     function()
     --mouse motion
-        local tx, ty = can.getSize()
-        local fx, fy, lx, ly
-        local mx, my = tx/2, ty/2
-        while true do
-            local user = mods.sense()
-            for i = 1, #user do
-                if user[i].x == 0 and user[i].y == 0 and user[i].z == 0 then
-                    user = user[i]
-                    break
+        if enabled then
+            local tx, ty = can.getSize()
+            local fx, fy, lx, ly
+            local mx, my = tx/2, ty/2
+            while true do
+                local user = mods.sense()
+                for i = 1, #user do
+                    if user[i].x == 0 and user[i].y == 0 and user[i].z == 0 then
+                        user = user[i]
+                        break
+                    end
                 end
+                if not lx then
+                    fx, fy = user.yaw+180, user.pitch+90
+                end
+                    lx, ly = (user.yaw+180), (user.pitch+90)
+                if math.abs(lx-fx) < 179 then
+                    mx = mx+((lx-fx)*sx)
+                end
+                if mx > tx then
+                    mx = 0
+                elseif mx < 0 then
+                    mx = tx
+                end
+                my = my+((ly-fy)*(sy+1))
+                if my < 0 then
+                    my = 0
+                elseif my > ty then
+                    my = ty
+                end
+                fx, fy = lx, ly
+                mse.setPosition(mx, my)
+                sleep()
             end
-            if not lx then
-                fx, fy = user.yaw+180, user.pitch+90
-            end
-            lx, ly = (user.yaw+180), (user.pitch+90)
-            if math.abs(lx-fx) < 179 then
-                mx = mx+((lx-fx)*sx)
-            end
-            if mx > tx then
-                mx = 0
-            elseif mx < 0 then
-                mx = tx
-            end
-            my = my+((ly-fy)*(sy+1))
-            if my < 0 then
-                my = 0
-            elseif my > ty then
-                my = ty
-            end
-            fx, fy = lx, ly
-            mse.setPosition(mx, my)
-            sleep()
         end
     end,
     function()
     --mouse event queueing
-        local mx, my
-        while true do
-            local user = mods.getMetaOwner()
-            if user.isSneaking then
-                local dx, dy = mse.getPosition()
-                dx, dy = math.ceil(dx/ox), math.floor(dy/oy)+1
-                if not mx then
-                    os.queueEvent("mouse_click", 1, dx, dy)
-                elseif (dx ~= mx or dy ~= my) and mx then
-                    os.queueEvent("mouse_drag", 1, dx, dy)
+        if enabled then
+            local mx, my
+            while true do
+                local user = mods.getMetaOwner()
+                if user.isSneaking then
+                    local dx, dy = mse.getPosition()
+                    dx, dy = math.ceil(dx/ox), math.floor(dy/oy)+1
+                    if not mx then
+                        os.queueEvent("mouse_click", 1, dx, dy)
+                    elseif (dx ~= mx or dy ~= my) and mx then
+                        os.queueEvent("mouse_drag", 1, dx, dy)
+                    end
+                    mx, my = dx, dy
+                else
+                    mx, my = nil, nil
                 end
-                mx, my = dx, dy
-            else
-                mx, my = nil, nil
+                sleep()
             end
-            sleep()
         end
     end)
 end
