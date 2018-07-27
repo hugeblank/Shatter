@@ -31,7 +31,11 @@ Shatter adds several features to the overlay glasses experience beyond a termina
   - _number_: alpha value within range 0-1
 - **Returns**
   - _none_
-  
+
+## Events
+  `glass_handler`: fired when the glass handler is loaded
+  `glass_redirect`: fired when the glass terminal object is requested in `getTerm`
+
 ## Mouse
 Shatter has a mouse directly built into the terminal software, for convenience sake. It is enabled by default. In the event that you would like to disable the mouse, simply toggle the boolean value "[enabled](https://github.com/hugeblank/Shatter/blob/2e95bc88a4b3095fdf6aff2f5f87484cf07245a2/shatter.lua#L3)"
 ### Additional Requirements
