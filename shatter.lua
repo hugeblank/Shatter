@@ -1,15 +1,8 @@
 local mods = peripheral.wrap("back")
---mouse toggle, set to false if you would prefer not to use the integrated mouse. REMOVES THE NEED FOR ENTITY SENSOR AND INTROSPECTION MODULE
-local enabled = true
---ensure all modules are present
+--ensure all glasses are present
 local err, str = false, ""
 if not mods.canvas then
-    str = "Shatter requires Overlay Glasses"
-elseif (not (mods.getMetaOwner and mods.sense)) and enabled then
-    str = "Mouse enabled, an Introspection Module, and an Entity Sensor are required"
-end
-if #str > 0 then
-    error(str, 2)
+    error("Shatter requires Overlay Glasses", 2)
 end
 local can = mods.canvas()
 can.clear()
@@ -21,10 +14,8 @@ local cbn = {colors.white, colors.orange, colors.magenta, colors.lightBlue, colo
 local ox, oy = 6, 9
 --term bg and fg colors
 local bg, fg, bgbn, fgbn = colors.black, colors.white, 2^(#cbn-1), 2^0
---cursor pos and blink
-local cx, cy, cb = 1, 1, true
---mouse sensitivity
-local sx, sy = 1, 1
+--cursor, pos, and blink
+local csr, cx, cy, cb = nil, 1, 1, true
 --handler activity, used to ensure cursor is activated before the term is redirected to.
 local active = false
 --term size
@@ -42,13 +33,12 @@ do
         end
     end
 end
-function csrhandler()
+function handler()
     can.clear()
     active = true
-    os.queueEvent("glass_handler")
-    os.pullEvent("glass_redirect")
-    local mse = can.addDot({tx/2, ty/2}, 0x00ff00ff, 2)
-    local csr = can.addText({cx*ox, (cy*oy)+1}, "_")
+    os.queueEvent("shatter_handler")
+    os.pullEvent("shatter_redirect")
+    csr = can.addText({cx*ox, (cy*oy)+1}, "_")
     parallel.waitForAll(function()
     --cursor flicker
         while true do
@@ -63,69 +53,16 @@ function csrhandler()
         end
     end,
     function()
-    --cursor position
+        --glasses event handler conversion
         while true do
-            csr.setPosition((cx-1)*ox, ((cy-1)*oy)+1)
-            sleep()
-        end
-    end,
-    function()
-    --mouse motion
-        if enabled then
-            local tx, ty = can.getSize()
-            local fx, fy, lx, ly
-            local mx, my = tx/2, ty/2
-            while true do
-                local user = mods.sense()
-                for i = 1, #user do
-                    if user[i].x == 0 and user[i].y == 0 and user[i].z == 0 then
-                        user = user[i]
-                        break
-                    end
+            local e = {os.pullEvent()}
+            if e[1]:find("glasses") then
+                local _, b = e[1]:find("glasses")
+                e[1] = "mouse"..e[1]:sub(b+1, -1)
+                if e[1] == "mouse_click" or e[1] == "mouse_up" or e[1] == "mouse_drag" then
+                    e[3], e[4] = math.ceil(e[3]/ox), math.ceil(e[4]/oy)
                 end
-                if not lx then
-                    fx, fy = user.yaw+180, user.pitch+90
-                end
-                    lx, ly = (user.yaw+180), (user.pitch+90)
-                if math.abs(lx-fx) < 179 then
-                    mx = mx+((lx-fx)*sx)
-                end
-                if mx > tx then
-                    mx = 0
-                elseif mx < 0 then
-                    mx = tx
-                end
-                my = my+((ly-fy)*(sy+1))
-                if my < 0 then
-                    my = 0
-                elseif my > ty then
-                    my = ty
-                end
-                fx, fy = lx, ly
-                mse.setPosition(mx, my)
-                sleep()
-            end
-        end
-    end,
-    function()
-    --mouse event queueing
-        if enabled then
-            local mx, my
-            while true do
-                local user = mods.getMetaOwner()
-                if user.isSneaking then
-                    local dx, dy = mse.getPosition()
-                    dx, dy = math.ceil(dx/ox), math.floor(dy/oy)+1
-                    if not mx then
-                        os.queueEvent("mouse_click", 1, dx, dy)
-                    elseif (dx ~= mx or dy ~= my) and mx then
-                        os.queueEvent("mouse_drag", 1, dx, dy)
-                    end
-                    mx, my = dx, dy
-                else
-                    mx, my = nil, nil
-                end
-                sleep()
+                os.queueEvent(unpack(e))
             end
         end
     end)
@@ -248,6 +185,7 @@ out.setCursorPos = function(x, y)
     elseif type(y) ~= "number" then
         error("bad argument #2 (expected number, got "..type(y)..")", 2)
     end
+    csr.setPosition((x-1)*ox, ((y-1)*oy)+1)
     cx, cy = x, y
 end
 out.setCursorBlink = function(b)
