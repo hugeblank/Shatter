@@ -15,7 +15,7 @@ local ox, oy = 6, 9
 --term bg and fg colors
 local bg, fg, bgbn, fgbn = colors.black, colors.white, 2^(#cbn-1), 2^0
 --cursor, pos, and blink
-local csr, cx, cy, cb = can.addText({cx*ox, (cy*oy)+1}, "", 0x0f0f0fff), 1, 1, true
+local csr, cx, cy, cb = nil, 1, 1, true
 --handler activity, used to ensure cursor is activated before the term is redirected to.
 local active = false
 --term size
@@ -37,6 +37,7 @@ function handler()
     can.clear()
     active = true
     os.queueEvent("shatter_handler")
+    csr = can.addText({cx*ox, (cy*oy)+1}, "", 0x0f0f0fff)
     os.pullEvent("shatter_redirect")
     parallel.waitForAll(function()
     --cursor flicker
