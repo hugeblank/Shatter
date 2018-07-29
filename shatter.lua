@@ -16,7 +16,6 @@ local ox, oy = 6, 9
 local bg, fg, bgbn, fgbn = colors.black, colors.white, 2^(#cbn-1), 2^0
 --cursor, pos, and blink
 local csr, cx, cy, cb = nil, 1, 1, true
-csr = can.addText({cx*ox, (cy*oy)+1}, "", 0xf0f0f0ff)
 --handler activity, used to ensure cursor is activated before the term is redirected to.
 local active = false
 --term size
@@ -126,6 +125,7 @@ function getTerm()
         error("cursor handler is not initialized", 0)
     end
     repopulate()
+    csr = can.addText({cx*ox, (cy*oy)+1}, "", 0xf0f0f0ff)
     os.queueEvent("shatter_redirect")
     return out
 end
