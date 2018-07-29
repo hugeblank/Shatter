@@ -35,7 +35,6 @@ do
     end
 end
 function handler()
-    can.clear()
     active = true
     os.queueEvent("shatter_handler")
     os.pullEvent("shatter_redirect")
