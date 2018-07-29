@@ -1,12 +1,12 @@
 # Shatter
 Shatter your dull Overlay Glasses experience by turning it into a redirectable terminal target!
 
-Shatter adds several features to the overlay glasses experience beyond a terminal, including a mouse that uses player orientation, and a wireless keyboard server/client arrangment with both secure and insecure variants. It is meant to be used in a neural interface (obviously).
+Shatter adds several features to the overlay glasses experience beyond a terminal. It is meant to be used in a neural interface (obviously) with an unbound wireless keyboard.
 
 # Brief Rundown
 
 ## API
-`csrhandler`: handler for cursor positioning and blink, and mouse position and event state. Meant to be put in parallel, or any other multithreading option.
+`handler`: handler for cursor positioning and blink, and mouse position and event state. Meant to be put in parallel, or any other multithreading option.
 - **Parameters**
   - _none_
 - **Returns**
@@ -33,34 +33,26 @@ Shatter adds several features to the overlay glasses experience beyond a termina
   - _none_
 
 ## Events
-  `glass_handler`: fired when the glass handler is loaded
+  `shatter_handler`: fired when the shatter handler is loaded
   
-  `glass_redirect`: fired when the glass terminal object is requested in `getTerm`
-
-## Mouse
-Shatter has a mouse directly built into the terminal software, for convenience sake. It is enabled by default. In the event that you would like to disable the mouse, simply toggle the boolean value "[enabled](https://github.com/hugeblank/Shatter/blob/2e95bc88a4b3095fdf6aff2f5f87484cf07245a2/shatter.lua#L3)"
-### Additional Requirements
-In order for the mouse to have proper functionality an Entity Sensor and an Introspection Module are required.
-### Controls
-Controlling the mouse is almost second nature. move your character's head up, down, left, and right to control cursor movement. Don't worry about going too far too the left or right, the mouse conveniently wraps around the edge of the screen so you have 360 degress of control. To click press shift, and to drag hold shift and move head.
-
+  `shatter_redirect`: fired when the shatter terminal object is requested in `getTerm`
+  
 # Getting Started
 Let's set up all elements of shatter!
+Obviously you're here for this part so I'll make it as brief as possible.
 
-## Terminal & Mouse
-Obviouslsy you're here for this part so I'll make it as brief as possible.
 1. run `wget https://raw.githubusercontent.com/hugeblank/Shatter/master/shatter.lua` on your neural interface that has overlay glasses.
-2. If you do not want the mouse, disable it on line 3
+2. Find an unbound wireless keyboard, this functions as both a keyboard & mouse, keep that in mind.
 
 # Putting it all Together
 Here's an example of how you could put your startup file together:
 ```
 os.loadAPI("shatter.lua") -- Load the shatter API
-parallel.waitForAll(shatter.csrhandler,
+parallel.waitForAll(shatter.handler,
 function()
-  os.pullEvent("glass_handler") -- wait for the handler to load
-  _G.glass = shatter.getTerm() -- get the terminal object, and put it in the global scope (for alpha setting in the shell)
-  term.redirect(glass) -- redirect to overlay
+  os.pullEvent("shatter_handler") -- wait for the handler to load
+  _G.glasses = shatter.getTerm() -- get the terminal object, and put it in the global scope (for alpha setting in the shell)
+  term.redirect(glasses) -- redirect to overlay
   glass.setAlpha(colors.black, .4) -- set the alpha value of the black color to .4, for visibility.
   term.clear() -- apply the alpha value change
   shell.run("shell") -- run the shell
