@@ -32,10 +32,18 @@ Shatter adds several features to the overlay glasses experience beyond a termina
 - **Returns**
   - _none_
 
+`setTextScale`: set the text and background pixel scale
+- **Parameters**
+  - _number_: scale value within range 0.5-10
+- **Returns**
+  - _none_
+  
 ## Events
   `shatter_handler`: fired when the shatter handler is loaded
   
   `shatter_redirect`: fired when the shatter terminal object is requested in `getTerm`
+  
+  `shatter_resize`: fired when the shatter terminal object is resized
   
 # Getting Started
 Let's set up all elements of shatter!
@@ -57,5 +65,8 @@ function()
   term.clear() -- apply the alpha value change
   shell.run("shell") -- run the shell
 end,
-)
+function()
+  os.pullEvent("shatter_resize") -- check for when the glasses get resized
+  os.queueEvent("term_resize") -- apply it to the shell terminal
+end)
 ```
