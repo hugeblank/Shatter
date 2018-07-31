@@ -368,7 +368,6 @@ out.getBackgroundColour = out.getBackgroundColor
 out.getPaletteColour = out.getPaletteColor
 
 out.setTextScale = function(scale)
--- consider reimpl, is shit
     if type(scale) ~= "number" then
         error("bad argument #1 (number expected, got "..type(scale)..")", 2)
     end
