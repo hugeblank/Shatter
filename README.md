@@ -61,7 +61,7 @@ function()
   os.pullEvent("shatter_handler") -- wait for the handler to load
   _G.glasses = shatter.getTerm() -- get the terminal object, and put it in the global scope (for alpha setting in the shell)
   term.redirect(glasses) -- redirect to overlay
-  glass.setAlpha(colors.black, .4) -- set the alpha value of the black color to .4, for visibility.
+  glasses.setAlpha(colors.black, .4) -- set the alpha value of the black color to .4, for visibility.
   term.clear() -- apply the alpha value change
   shell.run("shell") -- run the shell
 end,
