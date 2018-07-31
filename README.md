@@ -6,7 +6,7 @@ Shatter adds several features to the overlay glasses experience beyond a termina
 # Brief Rundown
 
 ## API
-`handler`: handler for cursor positioning and blink, and mouse position and event state. Meant to be put in parallel, or any other multithreading option.
+`handler`: handler for cursor blink, and glasses to mouse event conversion. Meant to be put in parallel, or any other multithreading option.
 - **Parameters**
   - _none_
 - **Returns**
@@ -45,7 +45,7 @@ Obviously you're here for this part so I'll make it as brief as possible.
 2. Find an unbound wireless keyboard, this functions as both a keyboard & mouse, keep that in mind.
 
 # Putting it all Together
-Here's an example of how you could put your startup file together:
+Here's an example of how you could put a startup file together, runs shell on the redirected overlay glasses:
 ```
 os.loadAPI("shatter.lua") -- Load the shatter API
 parallel.waitForAll(shatter.handler,
