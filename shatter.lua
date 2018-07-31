@@ -397,8 +397,3 @@ out.setTextScale = function(scale)
     end
     os.queueEvent("shatter_resize")
 end
-
--- Changes to cursor creation
--- Added setTextScale, and manipulated functions used in combination with it.
--- Changed rendering so that entire background gets rendered before characters
--- so that text doesn't get clipped by it.
