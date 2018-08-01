@@ -37,7 +37,31 @@ Shatter adds several features to the overlay glasses experience beyond a termina
   - _number_: scale value within range 0.5-10
 - **Returns**
   - _none_
+
+`setTextHex`: set the text color using any hex color code. Includes rgb, and a.
+- **Parameters**
+  - _number_: hex code for color value
+- **Returns**
+  - _none_
   
+`setBackgroundHex`: set the background color using any hex color code. Includes rgb, and a.
+- **Parameters**
+  - _number_: hex code for color value
+- **Returns**
+  - _none_
+
+`getTextHex`: set the text color using any hex color code. Includes rgb, and a.
+- **Parameters**
+  - _none_
+- **Returns**
+  - _number_: hex code for color value
+  
+`getBackgroundHex`: set the background color using any hex color code. Includes rgb, and a.
+- **Parameters**
+  - _none_
+- **Returns**
+  - _number_: hex code for color value
+
 ## Events
   `shatter_handler`: fired when the shatter handler is loaded
   
