@@ -48,25 +48,25 @@ Shatter adds several features to the overlay glasses experience beyond a termina
 
 ### Hex Color Manipulation:
 
-`setTextHex`: set the text color using any hex color code. Includes rgb, and a.
+`setTextHex`: set the text color using any hex color code. Includes rg, and b
 - **Parameters**
   - _number_: hex code for color value
 - **Returns**
   - _none_
   
-`setBackgroundHex`: set the background color using any hex color code. Includes rgb, and a.
+`setBackgroundHex`: set the background color using any hex color code. Includes rg, and b
 - **Parameters**
   - _number_: hex code for color value
 - **Returns**
   - _none_
 
-`getTextHex`: set the text color using any hex color code. Includes rgb, and a.
+`getTextHex`: set the text color using any hex color code. Includes rg, and b
 - **Parameters**
   - _none_
 - **Returns**
   - _number_: hex code for color value
   
-`getBackgroundHex`: set the background color using any hex color code. Includes rgb, and a.
+`getBackgroundHex`: set the background color using any hex color code. Includes rg, and b
 - **Parameters**
   - _none_
 - **Returns**
@@ -103,7 +103,7 @@ function()
   os.pullEvent("shatter_handler") -- wait for the handler to load
   _G.glasses = shatter.getTerm() -- get the terminal object, and put it in the global scope (for alpha setting in the shell)
   term.redirect(glasses) -- redirect to overlay
-  glasses.setAlpha(colors.black, .4) -- set the alpha value of the black color to .4, for visibility.
+  glasses.setBackgroundAlpha(.4) -- set the alpha value of the background to .4, for visibility.
   term.clear() -- apply the alpha value change
   shell.run("shell") -- run the shell
 end,
