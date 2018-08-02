@@ -19,24 +19,34 @@ Shatter adds several features to the overlay glasses experience beyond a termina
   - _table_: terminal object
   
 ## Terminal Object
-`getAlpha`: get the alpha value for a specific color
+
+### Alpha Manipulation:
+
+`getTextAlpha`: get the alpha value for the text
 - **Parameters**
-  - _number_: valid terminal color
+  - _none_
 - **Returns**
   - _number_: alpha value, in range 0-1
   
-`setAlpha`: set the alpha value for a specific color
+`getBackgroundAlpha`: get the alpha value for the background
 - **Parameters**
-  - _number_: valid terminal color
+  - _none_
+- **Returns**
+  - _number_: alpha value, in range 0-1
+  
+`setTextAlpha`: set the alpha value for the text
+- **Parameters**
+  - _number_: alpha value within range 0-1
+- **Returns**
+  - _none_
+  
+`setBackgroundAlpha`: set the alpha value for the background
+- **Parameters**
   - _number_: alpha value within range 0-1
 - **Returns**
   - _none_
 
-`setTextScale`: set the text and background pixel scale
-- **Parameters**
-  - _number_: scale value within range 0.5-10
-- **Returns**
-  - _none_
+### Hex Color Manipulation:
 
 `setTextHex`: set the text color using any hex color code. Includes rgb, and a.
 - **Parameters**
@@ -61,6 +71,14 @@ Shatter adds several features to the overlay glasses experience beyond a termina
   - _none_
 - **Returns**
   - _number_: hex code for color value
+
+### Scaling:
+
+`setTextScale`: set the text and background pixel scale
+- **Parameters**
+  - _number_: scale value within range 0.5-10
+- **Returns**
+  - _none_
 
 ## Events
   `shatter_handler`: fired when the shatter handler is loaded
