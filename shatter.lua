@@ -7,7 +7,7 @@ end
 local can = mods.canvas()
 can.clear()
 --colors, for reference use
-local colors = {white = 0xf0f0f0ff, orange = 0xf2b233ff, magenta = 0xe57fd8ff, lightBlue = 0x99b2f2ff, yellow = 0xdede6cff, lime = 0x7fcc19ff, pink = 0xf2b2ccff, gray = 0x4c4c4cff, lightGray = 0x999999ff, cyan = 0x4c99b2ff, purple = 0xb266e5ff, blue = 0x3366ccff, brown = 0x7f664cff, green = 0x57a64eff, red = 0xcc4c4cff, black = 0x191919ff}
+local colors = {white = 0xf0f0f000, orange = 0xf2b23300, magenta = 0xe57fd800, lightBlue = 0x99b2f200, yellow = 0xdede6c00, lime = 0x7fcc1900, pink = 0xf2b2cc00, gray = 0x4c4c4c00, lightGray = 0x99999900, cyan = 0x4c99b200, purple = 0xb266e500, blue = 0x3366cc00, brown = 0x7f664c00, green = 0x57a64e00, red = 0xcc4c4c00, black = 0x19191900}
 --colors by number
 local cbn = {colors.white, colors.orange, colors.magenta, colors.lightBlue, colors.yellow, colors.lime, colors.pink, colors.gray, colors.lightGray, colors.cyan, colors.purple, colors.blue, colors.brown, colors.green, colors.red, colors.black}
 --default term scale
@@ -15,7 +15,7 @@ local ox, oy = 6, 9
 -- default term scale
 local sx, sy = 6, 9
 --term bg and fg colors
-local bg, fg, bgbn, fgbn = colors.black, colors.white, 2^(#cbn-1), 2^0
+local bg, fg, bgbn, fgbn, fga, bga = colors.black, colors.white, 2^(#cbn-1), 2^0, 255, 255
 --cursor, pos, and blink
 local csr, cx, cy, cb = nil, 1, 1, true
 --handler activity, used to ensure cursor is activated before the term is redirected to.
@@ -146,8 +146,8 @@ out.write = function(str)
 --term.write
     str = tostring(str)
     for i = 1, #str do 
-        write(cx+i-1, cy, str:sub(i, i), fg)
-        draw(cx+i-1, cy, bg)
+        write(cx+i-1, cy, str:sub(i, i), fg+fga)
+        draw(cx+i-1, cy, bg+bga)
     end
     cx = cx+#str
 end
@@ -163,8 +163,8 @@ out.blit = function(str, tfg, tbg)
     for i = 1, #str do
         nfg = cbn[tonumber(tfg:sub(i,i), 16)+1]
         nbg = cbn[tonumber(tbg:sub(i,i), 16)+1]
-        draw(cx+i-1, cy, nbg)
-        write(cx+i-1, cy, str:sub(i,i), nfg)
+        draw(cx+i-1, cy, nbg+bga)
+        write(cx+i-1, cy, str:sub(i,i), nfg+fga)
     end
     cx = cx+#str
 end
@@ -172,8 +172,8 @@ out.clear = function()
 --term.clear
     for i = 1, tx do
         for j = 1, ty do
-            write(i, j, "", fg)
-            draw(i, j, bg)
+            write(i, j, "", fg+fga)
+            draw(i, j, bg+bga)
         end
     end
 end
@@ -181,8 +181,8 @@ out.clearLine = function()
 --term.clearLine
     if cy > 0 and cy <= ty then
         for i = 1, tx do
-            draw(i, cy, bg)
-            write(i, cy, "", fg)
+            draw(i, cy, bg+bga)
+            write(i, cy, "", fg+fga)
         end
     end
 end
@@ -266,6 +266,23 @@ out.setBackgroundColor = function(col)
         bgbn = col
     end
 end
+-- Text & BG Alpha innovated by MC:Ale32bit
+out.setTextAlpha = function(val)
+-- set the alpha value of the text    
+    if type(val) ~= "number" then
+        error("bad argument #1 (expected number, got "..type(val)..")", 2)
+    end
+    if val > 1 then val = 1 elseif val < 0 then val = 0 end
+    fga = math.floor(val*255)
+end
+out.setBackgroundAlpha = function(val)
+-- set the alpha value of the background
+    if type(val) ~= "number" then
+        error("bad argument #1 (expected number, got "..type(val)..")", 2)
+    end
+    if val > 1 then val = 1 elseif val < 0 then val = 0 end
+    bga = math.floor(val*255)
+end
 out.setTextHex = function(hex)
 -- set the hex color value of the text
     if type(tonumber(hex, 16)) ~= "number" then
@@ -290,6 +307,14 @@ out.getBackgroundColor = function()
 --term.getBackgroundColor
     return bgbn
 end
+out.getTextAlpha = function()
+-- get the alpha value of the text
+    return fga
+end
+out.getBackgroundAlpha = function()
+--get the alpha value of the background
+    return bga
+end
 out.getTextHex = function()
 -- get the hex color value of the text
     return fg
@@ -310,7 +335,7 @@ local function torgba(hex)
     return vals[4]/255, vals[3]/255, vals[2]/255
 end
 local function refreshColor(oc, nc)
--- refreshes terminal when palette/alpha values are manipulated
+-- refreshes terminal when palette values are manipulated
     for i = 1, #screen do
         for j = 1, #screen[i] do
             local op, changed = getData(screen[i][j]), false
@@ -327,40 +352,6 @@ local function refreshColor(oc, nc)
             end
         end
     end
-end
-out.getAlpha = function(col)
---get the alpha value of a specific color
-    if type(col) ~= "number" then
-        error("bad argument #1 (expected number, got "..type(col)..")")
-    end
-    if lb2(col) > #cbn or lb2(col) ~= math.ceil(lb2(col)) then
-        invCol(col)
-    end
-    local c = {torgba(cbn[lb2(col)+1])}
-    return  (cbn[lb2(col)+1]-(((c[1]*255)*(16^6))+((c[2]*255)*(16^4))+((c[3]*255)*(16^2))))/255
-end
-out.setAlpha = function(col, val)
---set the alpha value of a specific color
-    local oc = cbn[lb2(col)+1]
-    if type(col) ~= "number" then
-        error("bad argument #1 (number expected, got "..type(col)..")", 2)
-    end
-    if type(val) ~= "number" then
-        error("bad argument #2 (number expected, got "..type(val)..")", 2)
-    end
-    if lb2(col) > #cbn or lb2(col) ~= math.ceil(lb2(col)) then
-        invCol(col)
-    end
-    if val > 1 then val = 1 end
-    local c = {torgba(cbn[lb2(col)+1])}
-    cbn[lb2(col)+1] = ((c[1]*255)*(16^6))+((c[2]*255)*(16^4))+((c[3]*255)*(16^2))+math.ceil(val*255)
-    if col == bgbn then
-        out.setBackgroundColor(bgbn)
-    end
-    if col == fgbn then
-        out.setTextColor(fgbn)
-    end
-    refreshColor(oc, cbn[lb2(col)+1])
 end
 out.getPaletteColor = function(col)
 --term.getPaletteColor
@@ -387,12 +378,12 @@ out.setPaletteColor = function(cnum, r, g, b)
         elseif type(b) ~= "number" then
             error("bad argument #4 (number expected, got "..type(b)..")", 2)
         end
-        if r > 1 then r = 1 end
-        if g > 1 then g = 1 end
-        if b > 1 then b = 1 end
-        cbn[lb2(cnum)+1] = (((r*255)*(16^6))+((g*255)*(16^4))+((b*255)*(16^2)))+math.ceil(out.getAlpha(cnum)*255)
+        if r > 1 then r = 1 elseif r < 0 then r = 0 end
+        if g > 1 then g = 1 elseif g < 0 then g = 0 end
+        if b > 1 then b = 1 elseif b < 0 then b = 0 end
+        cbn[lb2(cnum)+1] = (((r*255)*(16^6))+((g*255)*(16^4))+((b*255)*(16^2)))
     else
-        cbn[lb2(cnum)+1] = (r*256)+math.ceil(out.getAlpha(cnum)*255)
+        cbn[lb2(cnum)+1] = (r*256)
     end
     if bgbn == cnum then
         out.setBackgroundColor(bgbn)
