@@ -105,7 +105,11 @@ function()
   term.redirect(glasses) -- redirect to overlay
   glasses.setBackgroundAlpha(.4) -- set the alpha value of the background to .4, for visibility.
   term.clear() -- apply the alpha value change
-  shell.run("shell") -- run the shell
+  if multishell then -- if an advanced computer run multishell
+    shell.run("/rom/programs/advanced/multishell.lua")
+  else -- otherwise run the shell
+    shell.run("shell")
+  end
 end,
 function()
   os.pullEvent("shatter_resize") -- check for when the glasses get resized
