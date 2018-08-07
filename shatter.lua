@@ -15,7 +15,7 @@ local ox, oy = 6, 9
 -- default term scale
 local sx, sy = 6, 9
 --term bg and fg colors
-local bg, fg, bgbn, fgbn, fga, bga = colors.black, colors.white, 2^(#cbn-1), 2^0, 255, 255
+local bg, fg, bgbn, fgbn, fga, bga, fgabn, bgabn = colors.black, colors.white, 2^(#cbn-1), 2^0, 255, 255, 1, 1
 --cursor, pos, and blink
 local csr, cx, cy, cb = nil, 1, 1, true
 --handler activity, used to ensure cursor is activated before the term is redirected to.
@@ -274,6 +274,7 @@ out.setTextAlpha = function(val)
     end
     if val > 1 then val = 1 elseif val < 0 then val = 0 end
     fga = math.floor(val*255)
+    fgabn = val
 end
 out.setBackgroundAlpha = function(val)
 -- set the alpha value of the background
@@ -282,6 +283,7 @@ out.setBackgroundAlpha = function(val)
     end
     if val > 1 then val = 1 elseif val < 0 then val = 0 end
     bga = math.floor(val*255)
+    bgabn = val
 end
 out.setTextHex = function(hex)
 -- set the hex color value of the text
@@ -309,11 +311,11 @@ out.getBackgroundColor = function()
 end
 out.getTextAlpha = function()
 -- get the alpha value of the text
-    return fga
+    return fgabn
 end
 out.getBackgroundAlpha = function()
 --get the alpha value of the background
-    return bga
+    return bgabn
 end
 out.getTextHex = function()
 -- get the hex color value of the text
