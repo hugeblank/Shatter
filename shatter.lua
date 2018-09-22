@@ -4,7 +4,7 @@ local err, str = false, ""
 if not mods.canvas then
     error("Shatter requires Overlay Glasses", 2)
 end
-function addterm(can)
+function addTerm(can)
     --###TERMINAL API CODE###--
     --colors, for reference use
     local colors = {white = 0xf0f0f000, orange = 0xf2b23300, magenta = 0xe57fd800, lightBlue = 0x99b2f200, yellow = 0xdede6c00, lime = 0x7fcc1900, pink = 0xf2b2cc00, gray = 0x4c4c4c00, lightGray = 0x99999900, cyan = 0x4c99b200, purple = 0xb266e500, blue = 0x3366cc00, brown = 0x7f664c00, green = 0x57a64e00, red = 0xcc4c4c00, black = 0x19191900}
