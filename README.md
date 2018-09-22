@@ -6,18 +6,13 @@ Shatter adds several features to the overlay glasses experience beyond a termina
 # Brief Rundown
 
 ## API
-`handler`: handler for cursor blink, and glasses to mouse event conversion. Meant to be put in parallel, or any other multithreading option.
+`addTerm`: Add a shatter terminal to the canvas object provided
 - **Parameters**
-  - _none_
-- **Returns**
-  - _none_
-
-`getTerm`: gives the terminal object once the handler has been activated.
-- **Parameters**
-  - _none_
+  - _table_: canvas object
 - **Returns**
   - _table_: terminal object
-  
+  - _function_: handler for cursor blink, and glasses to mouse event conversion. Meant to be put in parallel, or any other multithreading option.
+
 ## Terminal Object
 
 ### Alpha Manipulation:
@@ -27,19 +22,19 @@ Shatter adds several features to the overlay glasses experience beyond a termina
   - _none_
 - **Returns**
   - _number_: alpha value, in range 0-1
-  
+
 `getBackgroundAlpha`: get the alpha value for the background
 - **Parameters**
   - _none_
 - **Returns**
   - _number_: alpha value, in range 0-1
-  
+
 `setTextAlpha`: set the alpha value for the text
 - **Parameters**
   - _number_: alpha value within range 0-1
 - **Returns**
   - _none_
-  
+
 `setBackgroundAlpha`: set the alpha value for the background
 - **Parameters**
   - _number_: alpha value within range 0-1
@@ -53,7 +48,7 @@ Shatter adds several features to the overlay glasses experience beyond a termina
   - _number_: hex code for color value
 - **Returns**
   - _none_
-  
+
 `setBackgroundHex`: set the background color using any hex color code. Includes rg, and b
 - **Parameters**
   - _number_: hex code for color value
@@ -65,7 +60,7 @@ Shatter adds several features to the overlay glasses experience beyond a termina
   - _none_
 - **Returns**
   - _number_: hex code for color value
-  
+
 `getBackgroundHex`: set the background color using any hex color code. Includes rg, and b
 - **Parameters**
   - _none_
@@ -81,12 +76,9 @@ Shatter adds several features to the overlay glasses experience beyond a termina
   - _none_
 
 ## Events
-  `shatter_handler`: fired when the shatter handler is loaded
-  
-  `shatter_redirect`: fired when the shatter terminal object is requested in `getTerm`
-  
+
   `shatter_resize`: fired when the shatter terminal object is resized
-  
+
 # Getting Started
 Let's set up all elements of shatter!
 Obviously you're here for this part so I'll make it as brief as possible.
@@ -98,13 +90,13 @@ Obviously you're here for this part so I'll make it as brief as possible.
 Here's an example of how you could put a startup file together, runs shell on the redirected overlay glasses:
 ```
 os.loadAPI("shatter.lua") -- Load the shatter API
-parallel.waitForAll(shatter.handler,
+local modules, canvas = peripheral.wrap("back"), modules.canvas() -- wrap the neural interface modules, and then get the 2D canvas of the overlay glasses
+_G.glasses, handler = shatter.addTerm(canvas) -- add a terminal object to the canvas
+term.redirect(glasses) -- redirect to overlay
+glasses.setBackgroundAlpha(.4) -- set the alpha value of the background to .4, for visibility.
+term.clear() -- apply the alpha value change
+parallel.waitForAny(handler, -- parallel the handler function and a custom function that runs the generic CC shell
 function()
-  os.pullEvent("shatter_handler") -- wait for the handler to load
-  _G.glasses = shatter.getTerm() -- get the terminal object, and put it in the global scope (for alpha setting in the shell)
-  term.redirect(glasses) -- redirect to overlay
-  glasses.setBackgroundAlpha(.4) -- set the alpha value of the background to .4, for visibility.
-  term.clear() -- apply the alpha value change
   if multishell then -- if an advanced computer run multishell
     shell.run("/rom/programs/advanced/multishell.lua")
   else -- otherwise run the shell
