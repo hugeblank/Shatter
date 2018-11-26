@@ -104,7 +104,9 @@ function()
   end
 end,
 function()
-  os.pullEvent("shatter_resize") -- check for when the glasses get resized
-  os.queueEvent("term_resize") -- apply it to the shell terminal
+  while true do
+    os.pullEvent("shatter_resize") -- check for when the glasses get resized
+    os.queueEvent("term_resize") -- apply it to the shell terminal
+  end
 end)
 ```
