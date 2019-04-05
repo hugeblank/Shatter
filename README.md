@@ -8,19 +8,11 @@ Shatter adds several features to the overlay glasses experience beyond a termina
 
 ### API
 
-`handler`: handler for cursor blink, and glasses to mouse event conversion. Meant to be put in parallel, or any other multithreading option.
-
 - **Parameters**
-  - _none_
-- **Returns**
-  - _none_
-
-`getTerm`: gives the terminal object once the handler has been activated.
-
-- **Parameters**
-  - _none_
+  - _table_: canvas object provided by the overlay glasses
 - **Returns**
   - _table_: terminal object
+  - _function_: cursor handler function to be put in parallel with your code
   
 ### Terminal Object
 
