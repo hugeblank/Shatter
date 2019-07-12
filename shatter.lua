@@ -314,9 +314,9 @@ function addTerm(can)
 	out.setTextHex = function(hex)
 		-- set the hex color value of the text
 		if type(tonumber(hex, 16)) ~= "number" then
-			error("bad argument #1 (expected number, got "..type(col)..")", 2)
+			error("bad argument #1 (expected number, got "..type(hex)..")", 2)
 		end
-		fg = hex
+		fg = hex*0x100
 		fgbn = 1
 		csr.setColor(fg+fga)
 	end
@@ -324,9 +324,9 @@ function addTerm(can)
 	out.setBackgroundHex = function(hex)
 		-- set the hex color value of the background
 		if type(tonumber(hex, 16)) ~= "number" then
-			error("bad argument #1 (expected number, got "..type(col)..")", 2)
+			error("bad argument #1 (expected number, got "..type(hex)..")", 2)
 		end
-		bg = hex
+		bg = hex*0x100
 		bgbn = 1
 	end
 
