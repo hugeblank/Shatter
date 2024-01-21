@@ -1,30 +1,96 @@
+local cce = require("cc.expect")
+local expect, range = cce.expect, cce.range
 local mods = peripheral.wrap("back")
 -- ensure glasses are present
-local err, str = false, ""
 if not mods.canvas then
 	error("Shatter requires Overlay Glasses", 2)
 end
 
+-- populate that table
+local function makeScreen(can, ox, oy)
+    local screen = {}
+    local x, y = can.getSize()
+    for i = 1, math.floor(x / ox) do
+        screen[i] = {}
+        for j = 1, math.floor(y / oy) do
+            screen[i][j] = {}
+        end
+    end
+    return screen
+end
+
+-- very basic implementation of base 2 logarithm
+local function lb2(num)
+	return math.log(num)/math.log(2)
+end
+
+-- Converts a hex value into 3 seperate r, g, and b values
+local function torgba(hex)
+	-- Technically also gets a value, but it thrown out due to what this is needed for
+	-- Credit to MC:valithor2 for this algorithm
+	local vals = {}
+	for i = 1, 4 do
+		vals[i] = hex%256
+		hex = (hex-vals[i])/256
+	end
+	return vals[4]/255, vals[3]/255, vals[2]/255
+end
+
+--- Creates a shattered terminal
+---@param can ObjectGroup2D
+---@return ShatterTerm, function
 function addTerm(can)
-	-- ###TERMINAL API CODE###-- 
 
 	-- colors, for reference use
-	local colors = {white = 0xf0f0f000, orange = 0xf2b23300, magenta = 0xe57fd800, lightBlue = 0x99b2f200, yellow = 0xdede6c00, lime = 0x7fcc1900, pink = 0xf2b2cc00, gray = 0x4c4c4c00, lightGray = 0x99999900, cyan = 0x4c99b200, purple = 0xb266e500, blue = 0x3366cc00, brown = 0x7f664c00, green = 0x57a64e00, red = 0xcc4c4c00, black = 0x19191900}
+	local colors = {
+		white = 0xf0f0f000, 
+		orange = 0xf2b23300, 
+		magenta = 0xe57fd800, 
+		lightBlue = 0x99b2f200, 
+		yellow = 0xdede6c00, 
+		lime = 0x7fcc1900, 
+		pink = 0xf2b2cc00, 
+		gray = 0x4c4c4c00, 
+		lightGray = 0x99999900, 
+		cyan = 0x4c99b200, 
+		purple = 0xb266e500, 
+		blue = 0x3366cc00, 
+		brown = 0x7f664c00, 
+		green = 0x57a64e00, 
+		red = 0xcc4c4c00, 
+		black = 0x19191900
+	}
 
 	-- colors by number
-	local cbn = {colors.white, colors.orange, colors.magenta, colors.lightBlue, colors.yellow, colors.lime, colors.pink, colors.gray, colors.lightGray, colors.cyan, colors.purple, colors.blue, colors.brown, colors.green, colors.red, colors.black}
-
-	-- default term scale
-	local ox, oy = 6, 9
-
+	local cbn = {
+		colors.white,
+		colors.orange,
+		colors.magenta,
+		colors.lightBlue,
+		colors.yellow,
+		colors.lime,
+		colors.pink,
+		colors.gray,
+		colors.lightGray,
+		colors.cyan,
+		colors.purple,
+		colors.blue,
+		colors.brown,
+		colors.green,
+		colors.red,
+		colors.black
+	}
 	-- default term scale
 	local sx, sy = 6, 9
+
+	-- current term scale
+	local ox, oy = sx, sy
 
 	-- term bg and fg colors and alpha values
 	local bg, fg, bgbn, fgbn, fga, bga, fgabn, bgabn = colors.black, colors.white, 2^(#cbn-1), 2^0, 255, 255, 1, 1
 
 	-- cursor, pos, and blink
-	local csr, cx, cy, cb = nil, 1, 1, true
+	local csr, cx, cy, cb = nil, 1, 1, true --- @type TextObject, integer, integer, boolean
 
 	-- handler activity, used to ensure cursor is activated before the term is redirected to.
 	local active = false
@@ -33,31 +99,18 @@ function addTerm(can)
 	local tx, ty = can.getSize()
 	tx, ty = math.floor(tx/ox), math.floor(ty/oy)
 
-	-- Table of functions to be outputted
-	local out = {}
-
 	-- screen rendering in a table
-	local screen = {}
+	local screen = makeScreen(can, ox, oy)
 
-
-	out.screen = screen
-	-- populate that table
-	local function tPop()
-		local x, y = can.getSize()
-		for i = 1, math.floor(x/ox) do
-			screen[i] = {}
-			for j = 1, math.floor(y/oy) do
-				screen[i][j] = {bg = {}, fg = {}}
-			end
-		end
-	end
-	tPop()
+    -- Table of functions to be outputted
+	--- @class ShatterTerm
+	local out = {}
 
 	-- write text in grid fashion and add to table
 	local function write(x, y, char, color)
 		x, y = math.floor(x), math.floor(y)
 		if x > 0 and y > 0 and x <= tx and y <= ty then
-			if not screen[x][y].fg.getColor then
+			if not screen[x][y].fg then
 				screen[x][y].fg = can.addText({((x-1)*ox)+1, ((y-1)*oy)+1}, char, color, ox/sx)
 			else
 				if screen[x][y].fg.getColor() ~= color then
@@ -74,7 +127,7 @@ function addTerm(can)
 	local function draw(x, y, color)
 		x, y = math.floor(x), math.floor(y)
 		if x > 0 and y > 0 and x <= tx and y <= ty then
-			if not screen[x][y].bg.getColor then
+			if not screen[x][y].bg then
 				screen[x][y].bg = can.addRectangle((x-1)*ox, (y-1)*oy, ox, oy, color)
 			else
 				if screen[x][y].bg.getColor() ~= color then
@@ -86,7 +139,7 @@ function addTerm(can)
 
 	-- get the data of a particular pixel
 	local function getData(pixel)
-		if pixel then
+        if pixel then
 			return {
 				bgc = bit32.band(pixel.bg.getColor(), 2^32-1), -- Credit to MC:Anavrins for bit32 ingenuity
 				fgc = bit32.band(pixel.fg.getColor(), 2^32-1),
@@ -107,7 +160,10 @@ function addTerm(can)
 	end
 
 	-- populate term with default bg and fg colors.
-	local function repopulate()
+    local function repopulate()
+		if csr then
+			csr.remove()
+		end
 		local x, y = can.getSize()
 		for i = 1, math.floor(x/ox) do
 			for j = 1, math.floor(y/oy) do
@@ -120,28 +176,6 @@ function addTerm(can)
 			end
 		end
 		csr = can.addText({cx*ox, (cy*oy)+1}, "", 0xffffffff, ox/sx)
-	end
-
-	-- A simple error message I am too lazy to type twice
-	local function invCol(col)
-		error("invalid color (got "..col..")", 2)
-	end
-
-	-- very basic implementation of base 2 logarithm
-	local function lb2(num)
-		return math.log(num)/math.log(2)
-	end
-
-	-- Converts a hex value into 3 seperate r, g, and b values
-	local function torgba(hex)
-		-- Technically also gets a value, but it thrown out due to what this is needed for
-		-- Credit to MC:valithor2 for this algorithm
-		local vals = {}
-		for i = 1, 4 do
-			vals[i] = hex%256
-			hex = (hex-vals[i])/256
-		end
-		return vals[4]/255, vals[3]/255, vals[2]/255
 	end
 
 	local function refreshColor(oc, nc)
@@ -165,7 +199,6 @@ function addTerm(can)
 	end
 
 	out.write = function(str)
-		-- term.write
 		str = tostring(str)
 		for i = 1, #str do
 			write(cx+i-1, cy, str:sub(i, i), fg+fga)
@@ -174,15 +207,10 @@ function addTerm(can)
 		cx = cx+#str
 	end
 
-	out.blit = function(str, tfg, tbg)
-		-- term.blit
-		if type(str) ~= "string" then
-			error("bad argument #1 (expected string, got "..type(str)..")", 2)
-		elseif type(tfg) ~= "string" then
-			error("bad argument #2 (expected string, got "..type(tfg)..")", 2)
-		elseif type(tbg) ~= "string" then
-			error("bad argument #3 (expected string, got "..type(tbg)..")", 2)
-		end
+    out.blit = function(str, tfg, tbg)
+		expect(1, str, "string")
+		expect(2, tfg, "string")
+		expect(3, tbg, "string")
 		for i = 1, #str do
 			nfg = cbn[tonumber(tfg:sub(i,i), 16)+1]
 			nbg = cbn[tonumber(tbg:sub(i,i), 16)+1]
@@ -193,7 +221,6 @@ function addTerm(can)
 	end
 
 	out.clear = function()
-		-- term.clear
 		for i = 1, tx do
 			for j = 1, ty do
 				write(i, j, "", fg+fga)
@@ -203,7 +230,6 @@ function addTerm(can)
 	end
 
 	out.clearLine = function()
-		-- term.clearLine
 		if cy > 0 and cy <= ty then
 			for i = 1, tx do
 				draw(i, cy, bg+bga)
@@ -213,48 +239,36 @@ function addTerm(can)
 	end
 
 	out.getCursorPos = function()
-		-- term.getCursorPos
 		return cx, cy
 	end
 
-	out.setCursorPos = function(x, y)
-		-- term.setCursorPos
-		if type(x) ~= "number" then
-			error("bad argument #1 (expected number, got "..type(x)..")", 2)
-		elseif type(y) ~= "number" then
-			error("bad argument #2 (expected number, got "..type(y)..")", 2)
-		end
+    out.setCursorPos = function(x, y)
+		expect(1, x, "number")
+		expect(2, y, "number")
 		csr.setPosition((x-1)*ox, ((y-1)*oy)+1)
 		cx, cy = x, y
 	end
 
 	out.setCursorBlink = function(b)
-		-- term.setCursorBlink
-		if type(b) ~= "boolean" then
-			error("bad argument #1 (expected boolean, got "..type(b)..")", 2)
-		end
+		expect(1, b, "boolean")
 		cb = b
 	end
 
 	out.isColor = function()
-		-- term.isColor
-		return true, "now with more alpha!"
+		return true, 0xffffff
 	end
 
 	out.getSize = function()
-		-- term.getSize
 		return tx, ty
 	end
 
-	out.scroll = function(amount)
-		-- term.scroll
+    out.scroll = function(amount)
+		expect(1, amount, "number")
 		local tcx, tcy = out.getCursorPos()
-		if type(amount) ~= "number" then
-			error("bad argument #1 (expected number, got "..type(amount)..")", 2)
-		end
-		for i = 1, tx, amount^0 do
-			if i > 0 and i <= ty and i-amount > 0 and i-amount <= ty then
-				screen[i-amount] = screen[i]
+        for i = 1, tx do
+			local j = i-amount
+			if i > 0 and i <= ty and j > 0 and j <= ty then
+				screen[j] = screen[i]
 			elseif not (i > 0 and i <= ty) then
 				out.setCursorPos(1, i)
 				out.clearLine()
@@ -263,129 +277,98 @@ function addTerm(can)
 	end
 
 	out.setTextColor = function(col)
-		-- term.setTextColor
-		if type(col) ~= "number" then
-			error("bad argument #1 (number expected, got "..type(col)..")", 2)
-		end
-		if lb2(col) > #cbn or lb2(col) ~= math.ceil(lb2(col)) then
-			invCol(col)
+        expect(1, col, "number")
+		local cl = lb2(col)
+		if cl > #cbn or cl ~= math.ceil(cl) then
+			error("invalid color (got "..col..")", 2)
 		else
-			fg = cbn[lb2(col)+1]
+			fg = cbn[cl+1]
 			fgbn = col
 			csr.setColor(fg+fga)
 		end
 	end
 
 	out.setBackgroundColor = function(col)
-		-- term.setBackgroundColor
-		if type(col) ~= "number" then
-			error("bad argument #1 (expected number, got "..type(col)..")", 2)
-		end
-		if lb2(col) > #cbn or lb2(col) ~= math.ceil(lb2(col)) then
-			invCol(col)
+        expect(1, col, "number")
+		local cl = lb2(col)
+		if cl > #cbn or cl ~= math.ceil(cl) then
+			error("invalid color (got "..col..")", 2)
 		else
-			bg = cbn[lb2(col)+1]
+			bg = cbn[cl+1]
 			bgbn = col
 		end
 	end
 
 	-- Text & BG Alpha innovated by MC:Ale32bit
 	out.setTextAlpha = function(val)
-		-- set the alpha value of the text
-		if type(val) ~= "number" then
-			error("bad argument #1 (expected number, got "..type(val)..")", 2)
-		end
-		if val > 1 then val = 1 elseif val < 0 then val = 0 end
+		expect(1, val, "number")
+		val = math.max(0, math.min(1, val))
 		fga = math.floor(val*255)
 		fgabn = val
 		csr.setAlpha(fga)
 	end
 
 	out.setBackgroundAlpha = function(val)
-		-- set the alpha value of the background
-		if type(val) ~= "number" then
-			error("bad argument #1 (expected number, got "..type(val)..")", 2)
-		end
-		if val > 1 then val = 1 elseif val < 0 then val = 0 end
+        expect(1, val, "number")
+		val = math.max(0, math.min(1, val))
 		bga = math.floor(val*255)
 		bgabn = val
 	end
 
 	out.setTextHex = function(hex)
-		-- set the hex color value of the text
-		if type(tonumber(hex, 16)) ~= "number" then
-			error("bad argument #1 (expected number, got "..type(hex)..")", 2)
-		end
-		fg = hex*0x100
+		expect(1, hex, "number")
+		fg = bit32.lshift(hex, 2)
 		fgbn = 1
 		csr.setColor(fg+fga)
 	end
 
 	out.setBackgroundHex = function(hex)
-		-- set the hex color value of the background
-		if type(tonumber(hex, 16)) ~= "number" then
-			error("bad argument #1 (expected number, got "..type(hex)..")", 2)
-		end
-		bg = hex*0x100
+		expect(1, hex, "number")
+		bg = bit32.lshift(hex, 2)
 		bgbn = 1
 	end
 
 	out.getTextColor = function()
-		-- term.getTextColor
 		return fgbn
 	end
 
 	out.getBackgroundColor = function()
-		-- term.getBackgroundColor
 		return bgbn
 	end
 
 	out.getTextAlpha = function()
-		-- get the alpha value of the text
 		return fgabn
 	end
 
 	out.getBackgroundAlpha = function()
-		-- get the alpha value of the background
 		return bgabn
 	end
 
 	out.getTextHex = function()
-		-- get the hex color value of the text
 		return fg
 	end
 
 	out.getBackgroundHex = function()
-		-- get the hex color value of the background
 		return bg
 	end
 
 	out.getPaletteColor = function(col)
-		-- term.getPaletteColor
-		if type(col) ~= "number" then
-			error("bad argument #1 (number expected, got "..type(col)..")", 2)
+        expect(1, col, "number")
+		local cl = lb2(col)
+		if cl > #cbn or cl ~= math.ceil(cl) then
+			error("invalid color (got "..col..")", 2)
 		end
-		if lb2(col) > #cbn or lb2(col) ~= math.ceil(lb2(col)) then
-			invCol(col)
-		end
-		return torgba(cbn[lb2(col)+1])
+		return torgba(cbn[cl+1])
 	end
 
 	out.setPaletteColor = function(cnum, r, g, b)
-		-- term.setPaletteColor
+        -- term.setPaletteColor
+		expect(1, cnum, "number")
+		expect(2, r, "number")
+		expect(3, g, "number")
+		expect(4, b, "number")
 		local oc = cbn[lb2(cnum)+1]
-		if type(cnum) ~= "number" then
-			error("bad argument #1 (number expected, got "..type(cnum)..")", 2)
-		end
-		if type(r) ~= "number" then
-			error("bad argument #2 (number expected, got "..type(r)..")", 2)
-		end
 		if g then
-			if type(g) ~= "number" then
-				error("bad argument #3 (number expected, got "..type(g)..")", 2)
-			elseif type(b) ~= "number" then
-				error("bad argument #4 (number expected, got "..type(b)..")", 2)
-			end
 			if r > 1 then r = 1 elseif r < 0 then r = 0 end
 			if g > 1 then g = 1 elseif g < 0 then g = 0 end
 			if b > 1 then b = 1 elseif b < 0 then b = 0 end
@@ -402,20 +385,14 @@ function addTerm(can)
 		refreshColor(oc, cbn[lb2(cnum)+1])
 	end
 
-	out.setTextScale = function(scale)
-		if type(scale) ~= "number" then
-			error("bad argument #1 (number expected, got "..type(scale)..")", 2)
-		end
-		if 0.4 >= scale or scale > 10 then
-			error("Expected number in range 0.5-10", 2)
-		end
+    out.setScale = function(scale)
+        expect(1, scale, "number")
+		range(scale, 0.5, 10)
 		ox, oy = math.ceil(scale*sx), math.ceil(scale*sy)
 		tx, ty = can.getSize()
 		tx, ty = math.floor(tx/ox), math.floor(ty/oy)
-		csr.remove()
 		local oldscr = screen -- replicate the screen
-		screen = {} -- remove it for repopulation of table w/ new scale
-		tPop() -- repopulate table
+		screen = makeScreen(can, ox, oy)
 		repopulate() -- add objects
 		for i = 1, #oldscr do -- rerender screen in new scale
 			for j = 1, #oldscr[i] do
@@ -461,10 +438,9 @@ function addTerm(can)
 			-- glasses event handler conversion
 			while true do
 				local e = {os.pullEvent()}
-				if e[1]:find("glasses") then
-					local _, b = e[1]:find("glasses")
-					e[1], e[3], e[4] = "mouse"..e[1]:sub(b+1, -1), math.ceil(e[3]/ox), math.ceil(e[4]/oy)
-					os.queueEvent(unpack(e))
+				if e[1]:match("^glasses") then
+					e[1], e[3], e[4] = e[1]:gsub("^glasses", "mouse"), math.ceil(e[3]/ox), math.ceil(e[4]/oy)
+					os.queueEvent(table.unpack(e))
 				end
 			end
 		end)
