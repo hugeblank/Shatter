@@ -1,10 +1,5 @@
 local cce = require("cc.expect")
 local expect, range = cce.expect, cce.range
-local mods = peripheral.wrap("back")
--- ensure glasses are present
-if not mods.canvas then
-    error("Shatter requires Overlay Glasses", 2)
-end
 
 ---write text in grid fashion and add to table
 ---@param screen Screen
@@ -141,6 +136,7 @@ end
 ---@param can ObjectGroup2D
 ---@return ShatterTerm, function
 function addTerm(can)
+    assert(can.addRectangle and can.addText and can.getSize, "Shatter expects a canvas or group with addRectangle & addText")
 
     -- internal screen and state objects
     local state = defaultState(can)
