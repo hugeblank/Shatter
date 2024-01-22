@@ -46,30 +46,30 @@ Shatter adds several features to the overlay glasses experience beyond a termina
 - **Returns**
   - _none_
 
-#### Hex Color Manipulation
+#### Custom Color Manipulation
 
-`setTextHex`: set the text color using any hex color code. Includes rg, and b
+`setTextHex`: set the text color using a color code in the format `0xrrggbbaa`
 
 - **Parameters**
   - _number_: hex code for color value
 - **Returns**
   - _none_
   
-`setBackgroundHex`: set the background color using any hex color code. Includes rg, and b
+`setBackgroundHex`: set the background color using a hex color code in the format `0xrrggbbaa`
 
 - **Parameters**
   - _number_: hex code for color value
 - **Returns**
   - _none_
 
-`getTextHex`: set the text color using any hex color code. Includes rg, and b
+`getTextHex`: gets the text color returned in the format `0xrrggbbaa`
 
 - **Parameters**
   - _none_
 - **Returns**
   - _number_: hex code for color value
   
-`getBackgroundHex`: set the background color using any hex color code. Includes rg, and b
+`getBackgroundHex`: gets the background color returned in the format `0xrrggbbaa`
 
 - **Parameters**
   - _none_

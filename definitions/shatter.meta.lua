@@ -1,5 +1,47 @@
 ---@meta
 
+---@class colormap
+local colormap = {
+    [colors.white] = 0xf0f0f000,
+    [colors.orange] = 0xf2b23300,
+    [colors.magenta] = 0xe57fd800,
+    [colors.lightBlue] = 0x99b2f200,
+    [colors.yellow] = 0xdede6c00,
+    [colors.lime] = 0x7fcc1900,
+    [colors.pink] = 0xf2b2cc00,
+    [colors.gray] = 0x4c4c4c00,
+    [colors.lightGray] = 0x99999900,
+    [colors.cyan] = 0x4c99b200,
+    [colors.purple] = 0xb266e500,
+    [colors.blue] = 0x3366cc00,
+    [colors.brown] = 0x7f664c00,
+    [colors.green] = 0x57a64e00,
+    [colors.red] = 0xcc4c4c00,
+    [colors.black] = 0x19191900
+}
+
+---@class Screen
+---@field [integer] table<integer, { bg: RectangleObject, fg: TextObject } >
+
+---@class State
+---@field can ObjectGroup2D canvas
+---@field colormap colormap palette mappings
+---@field bg integer background hex color
+---@field fg integer foreground hex color 
+---@field bgbn integer background color key
+---@field fgbn integer foreground color key
+---@field bga integer background alpha
+---@field fga integer foreground alpha
+---@field sx integer default x scale
+---@field sy integer default y scale
+---@field ox integer current x scale
+---@field oy integer current y scale
+---@field tx integer terminal x size
+---@field ty integer terminal y size
+---@field cx integer cursor x
+---@field cy integer cursor y
+---@field cb boolean cursor blink
+
 ---@class ShatterTerm: Term
 ---@field getTextAlpha fun(): number # get the alpha value for the text, in range 0-1
 ---@field getBackgroundAlpha fun(): number # get the alpha value for the background, in range 0-1
